@@ -1,0 +1,26 @@
+sudo: required
+
+services:
+  - docker
+
+env:
+  global:
+    - TAGS="15.05.1-ar71xx lede-ar71xx"
+    - USER=yhnw
+    - REPO=openwrt-image-generator
+    - secure: "TF51SMfd1QTROC4OEqiY3LVtVZySTAm+8fY7mi5bmo47ygRG+rV1bFCz3Q7c24Fy6/vXR2lVdk1cAXJMKfzZ/GO/MhkGKVO6dILwdTafR2xobKGSfJ93JJ5zxyLnX/OHI9REMIde0xs4R2j4Gs8LLu05t+ZLlDvO6RefNryanK+qVAx/U5ev8sldCFIZdEAKdoiGFHdl75wo6hvELwrfojt7m1YguIeug5Xx3jLrcNmcEtS3IWLXGLIywvZqMjXtUSdY2QwDnYXeQBJjaPqS+JFm3aPd57mHDmbZabAjU75s+r/ZiC5E1hHw0Tx08k6MOZjX33reYNJ36WexcZQ3NPuMHIsWOQCZ2312doDBsDDamsobXxj8+bxBwK3bLLLHx51FvzZC31QhuzRxAj3m+L3x7Oxu4q5xU1aGTgOvFG323FZZbLk8NzUJbS2AxZdxOMsBfqvKRU8VDIaKJAQrPCsZ7oHWQXittDOihh6jQjLmS7Um0CAfAlflYdy8WJctS+hCqZ0rakkG39hwGZyUQ/F9aR2lBamFuyL4SjZ9FXouucMkTPmrIbfyWuEgvL585mRNCpaHDaNgqumoUBvO8egOW0v+ygfmh6Z9LrGcZLFVzgRWGIGmOHVMr7OhiIc2zzWtQHsBdScGJcHzZRmwswv55iphp4dcT/g3k4fyXAA="
+
+before_install:
+  - docker version
+  - docker build -t $USER/$REPO:base -f Dockerfile.base .
+
+script:
+  - for TAG in $TAGS; do
+      docker build -t $USER/$REPO:$TAG -f Dockerfile.$TAG .;
+    done
+
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+      docker login -u=$USER -p=$DOCKER_PASSWORD &&
+      docker push $USER/$REPO ;
+    fi
